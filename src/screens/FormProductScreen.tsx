@@ -17,7 +17,7 @@ import {ICategory, IDatabaseData} from '../types/dataType';
 import database from '../db/database';
 import {IconCancel, IconDelete, IconEdit} from '../components/Icons/Icons';
 
-const FormCategoryScreen = ({navigation, route}: any) => {
+const FormProductScreen = ({navigation, route}: any) => {
   // const categoryStore = useStore((state: any) => state.category);
   const [categoryTitleInput, setCategoryTitleInput] = useState<string>('');
   const [categoryValueInput, setCategoryValueInput] = useState<string>('');
@@ -266,4 +266,4 @@ const styles = StyleSheet.create({
     width: GLOBALSTYLE.SPACING.space_36,
   },
 });
-export default FormCategoryScreen;
+export default FormProductScreen;

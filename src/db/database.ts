@@ -1,4 +1,5 @@
 import SQLite from 'react-native-sqlite-storage';
+import {IDatabaseData} from '../types/dataType';
 
 class Database {
   private db: SQLite.SQLiteDatabase;
@@ -36,7 +37,7 @@ class Database {
   }
 
   // Функция для вставки данных
-  public createItem(name: string, value: string) {
+  public createItem({name: name, value: value}: {name: string; value: string}) {
     this.db.transaction((tx: SQLite.Transaction) => {
       tx.executeSql(
         'INSERT INTO items (name, value) VALUES (?, ?)',
@@ -69,7 +70,7 @@ class Database {
   }
 
   // Функция для обновления данных
-  public updateItem(id: number, name: string, value: string) {
+  public updateItem({id: id, name: name, value: value}: IDatabaseData) {
     this.db.transaction((tx: SQLite.Transaction) => {
       tx.executeSql(
         'UPDATE items SET name = ?, value = ? WHERE id = ?',
