@@ -53,7 +53,7 @@ class Database {
   }
 
   // Функция для получения данных
-  public getItems(callback: (items: any[]) => void) {
+  public getItems(callback: (items: IDatabaseData[]) => void) {
     this.db.transaction((tx: SQLite.Transaction) => {
       tx.executeSql(
         'SELECT * FROM items',
@@ -68,7 +68,25 @@ class Database {
       );
     });
   }
-
+  public getItemById(id: number, callback: (item: any) => void) {
+    this.db.transaction((tx: SQLite.Transaction) => {
+      tx.executeSql(
+        'SELECT * FROM items WHERE id = ?', // Запрос с фильтром по ID
+        [id], // Передаем ID в запрос
+        (_, { rows }) => {
+          if (rows.length > 0) {
+            callback(rows.item(0)); // Возвращаем объект, если запись найдена
+          } else {
+            callback(null); // Если записи нет, возвращаем null
+          }
+        },
+        error => {
+          console.log('Error fetching item by ID:', error);
+          callback(null); // В случае ошибки возвращаем null
+        },
+      );
+    });
+  }
   // Функция для обновления данных
   public updateItem({id: id, name: name, value: value}: IDatabaseData) {
     this.db.transaction((tx: SQLite.Transaction) => {

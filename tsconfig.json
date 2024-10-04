@@ -1,3 +1,10 @@
 {
-  "extends": "@tsconfig/react-native/tsconfig.json"
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    // "jsx": "react-native", // Устанавливаем режим JSX для React Native
+    // "allowJs": true, // Разрешаем использование JavaScript файлов
+    // "esModuleInterop": true, // Обеспечивает совместимость с CommonJS модулями
+    // "moduleResolution": "node", // Правильное разрешение модулей
+    // "skipLibCheck": true // Пропускаем проверку типовых деклараций библиотек
+  }
 }

@@ -25,6 +25,7 @@ import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
 import Database from '../db/database';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import { createStandardData } from '../db/data';
 
 const getCategoriesFromData = (data: any) => {
   let temp: any = {};
@@ -67,10 +68,7 @@ const TestScreen = ({navigation}: any) => {
     });
   };
   const ListRef: any = useRef<FlatList>();
-  const handleInsert = () => {
-    Database.createItem(nameText, surnameText);
-    loadItems(); // Обновляем данные после вставки
-  };
+
   const handleDelete = (id: number) => {
     Database.deleteItem(id);
     loadItems(); // Обновляем данные после вставки
@@ -83,42 +81,19 @@ const TestScreen = ({navigation}: any) => {
       {/* <HeaderBar /> */}
 
       <Text style={styles.ScreenTitle}>Тестовая страница</Text>
-      <TouchableOpacity>
-        <Text
-          onPress={() => navigation.push('FormCategory')}
-          style={styles.Button}>
-          Добавить категорию
-        </Text>
+      <TouchableOpacity onPress={() => navigation.push('FormCategory')}>
+        <Text style={styles.Button}>Добавить категорию</Text>
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.push('FormProduct')}>
         <Text style={styles.Button}>Добавить товар</Text>
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.push('FormImport')}>
         <Text style={styles.Button}>Добавить привоз</Text>
       </TouchableOpacity>
-      <TextInput
-        placeholder="Имя"
-        value={nameText}
-        onChangeText={text => {
-          setNameText(text);
-          //   searchCoffee(text);
-        }}
-        placeholderTextColor={COLORS.primaryLightGreyHex}
-        style={styles.TextInputContainer}
-      />
-      <TextInput
-        placeholder="Фамилия"
-        value={surnameText}
-        onChangeText={text => {
-          setSurnameText(text);
-          //   searchCoffee(text);
-        }}
-        placeholderTextColor={COLORS.primaryLightGreyHex}
-        style={styles.TextInputContainer}
-      />
-      <TouchableOpacity onPress={handleInsert}>
-        <Text style={styles.TestButton}>записать данные</Text>
+      <TouchableOpacity onPress={() => createStandardData()}>
+        <Text style={styles.Button}>Добавить дефолтные категории и товары</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={loadItems}>
         <Text style={styles.TestButton}>Получить данные</Text>
       </TouchableOpacity>
@@ -134,101 +109,6 @@ const TestScreen = ({navigation}: any) => {
           </View>
         )}
       />
-      {/* Search Input */}
-
-      {/* <View style={styles.InputContainerComponent}>
-          <TouchableOpacity
-            onPress={() => {
-              searchCoffee(nameText);
-            }}>
-            <CustomIcon
-              style={styles.InputIcon}
-              name="search"
-              size={FONTSIZE.size_18}
-              color={
-                nameText.length > 0
-                  ? COLORS.primaryOrangeHex
-                  : COLORS.primaryLightGreyHex
-              }
-            />
-          </TouchableOpacity>
-          <TextInput
-            placeholder="Some text"
-            value={nameText}
-            onChangeText={text => {
-              setNameText(text);
-              //   searchCoffee(text);
-            }}
-            placeholderTextColor={COLORS.primaryLightGreyHex}
-            style={styles.TextInputContainer}
-          />
-          <TextInput
-            placeholder="Some text"
-            value={surnameText}
-            onChangeText={text => {
-              setSurnameText(text);
-              //   searchCoffee(text);
-            }}
-            placeholderTextColor={COLORS.primaryLightGreyHex}
-            style={styles.TextInputContainer}
-          />
-          {nameText.length > 0 ? (
-            <TouchableOpacity
-              onPress={() => {
-                resetSearchCoffee();
-              }}>
-              <CustomIcon
-                style={styles.InputIcon}
-                name="close"
-                size={FONTSIZE.size_16}
-                color={COLORS.primaryLightGreyHex}
-              />
-            </TouchableOpacity>
-          ) : (
-            <></>
-          )}
-        </View> */}
-
-      {/* Category Scroller */}
-      {/* 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.CategoryScrollViewStyle}>
-          {categories.map((data, index) => (
-            <View
-              key={index.toString()}
-              style={styles.CategoryScrollViewContainer}>
-              <TouchableOpacity
-                style={styles.CategoryScrollViewItem}
-                onPress={() => {
-                  ListRef?.current?.scrollToOffset({
-                    animated: true,
-                    offset: 0,
-                  });
-                  setCategoryIndex({index: index, category: categories[index]});
-                  setSortedCoffee([
-                    ...getCoffeeList(categories[index], CoffeeList),
-                  ]);
-                }}>
-                <Text
-                  style={[
-                    styles.CategoryText,
-                    categoryIndex.index == index
-                      ? {color: COLORS.primaryOrangeHex}
-                      : {},
-                  ]}>
-                  {data}
-                </Text>
-                {categoryIndex.index == index ? (
-                  <View style={styles.ActiveCategory} />
-                ) : (
-                  <></>
-                )}
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView> */}
 
       <ScrollView
         horizontal

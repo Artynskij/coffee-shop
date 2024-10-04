@@ -20,19 +20,18 @@ import {IconCancel, IconDelete, IconEdit} from '../components/Icons/Icons';
 const FormCategoryScreen = ({navigation, route}: any) => {
   // const categoryStore = useStore((state: any) => state.category);
   const [categoryTitleInput, setCategoryTitleInput] = useState<string>('');
-  const [categoryValueInput, setCategoryValueInput] = useState<string>('');
   const [categoryEditId, setCategoryEditId] = useState<number>(0);
 
-  const [categoryData, setCategoryData] = useState<IDatabaseData[]>();
+  const [categoryData, setCategoryData] = useState<IDatabaseData[]>([]);
   useEffect(() => {
     loadItems();
   }, []);
   const loadItems = () => {
     database.getItems((data: IDatabaseData[]) => {
-      data.filter(item => {
+      const categories = data.filter(item => {
         return item.name === 'category';
       });
-      setCategoryData(data);
+      setCategoryData(categories);
     });
   };
   const editCategory = () => {
@@ -46,7 +45,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
     }
     const pushObject: ICategory = {
       title: categoryTitleInput,
-      value: categoryValueInput,
+      // value: categoryValueInput,
     };
     database.updateItem({
       id: categoryEditId,
@@ -64,7 +63,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
   const addCategory = () => {
     const pushObject: ICategory = {
       title: categoryTitleInput,
-      value: categoryValueInput,
+  
     };
 
     database.createItem({name: 'category', value: JSON.stringify(pushObject)});
@@ -73,10 +72,19 @@ const FormCategoryScreen = ({navigation, route}: any) => {
       ToastAndroid.SHORT,
       ToastAndroid.CENTER,
     );
+    setCategoryTitleInput('')
     loadItems();
   };
   const handlerActionCategory = () => {
-    if (!categoryData) return;
+    if (!categoryTitleInput) {
+      // || !categoryValueInput
+      ToastAndroid.showWithGravity(
+        `Пожалуйста введите все требуемые данные`,
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
+      return;
+    }
     if (categoryEditId) {
       editCategory();
     } else {
@@ -94,21 +102,21 @@ const FormCategoryScreen = ({navigation, route}: any) => {
   };
   const handlerEditCategory = ({
     id: id,
-    value: value,
+    // value: value,
     name: name,
   }: {
     id: number;
-    value: string;
+    // value: string;
     name: string;
   }) => {
     if (categoryEditId === id) {
       setCategoryTitleInput('');
-      setCategoryValueInput('');
+      // setCategoryValueInput('');
       setCategoryEditId(0);
       return;
     }
     setCategoryTitleInput(name);
-    setCategoryValueInput(value);
+    // setCategoryValueInput(value);
     setCategoryEditId(id);
   };
   return (
@@ -141,7 +149,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
           style={styles.InputText}
         />
       </View>
-      <View style={styles.InputContainer}>
+      {/* <View style={styles.InputContainer}>
         <TextInput
           placeholder="Категория название на английском"
           value={categoryValueInput}
@@ -152,7 +160,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
           placeholderTextColor={COLORS.primaryLightGreyHex}
           style={styles.InputText}
         />
-      </View>
+      </View> */}
       <View>
         <Text onPress={handlerActionCategory} style={styles.Button}>
           {categoryEditId ? ' Изменить Категорию' : 'Создать категорию'}
@@ -160,7 +168,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
       </View>
       <Text style={styles.HeaderText}>Категории</Text>
       <ScrollView style={styles.List}>
-        {categoryData ? (
+        {categoryData?.length > 0 ? (
           categoryData.map((item: IDatabaseData) => {
             const data: ICategory = JSON.parse(item.value);
             return (
@@ -172,7 +180,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
                       handlerEditCategory({
                         id: item.id,
                         name: data.title,
-                        value: data.value,
+                        // value: data.value,
                       });
                     }}>
                     {categoryEditId === item.id ? <IconCancel /> : <IconEdit />}
@@ -188,7 +196,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
             );
           })
         ) : (
-          <Text>Нихуя</Text>
+          <Text style={{color: 'white'}}>Нету существующих категорий.</Text>
         )}
       </ScrollView>
     </View>
