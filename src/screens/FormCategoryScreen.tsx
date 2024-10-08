@@ -4,7 +4,6 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   ToastAndroid,
   TouchableOpacity,
   View,
@@ -16,9 +15,10 @@ import {ICategory, IDatabaseData} from '../types/dataType';
 
 import database from '../db/database';
 import {IconCancel, IconDelete, IconEdit} from '../components/Icons/Icons';
+import {Input} from '../components/UI/Input';
+import {Button} from '../components/UI/Button';
 
-const FormCategoryScreen = ({navigation, route}: any) => {
-  // const categoryStore = useStore((state: any) => state.category);
+const FormCategoryScreen = ({navigation}: any) => {
   const [categoryTitleInput, setCategoryTitleInput] = useState<string>('');
   const [categoryEditId, setCategoryEditId] = useState<number>(0);
 
@@ -63,7 +63,6 @@ const FormCategoryScreen = ({navigation, route}: any) => {
   const addCategory = () => {
     const pushObject: ICategory = {
       title: categoryTitleInput,
-  
     };
 
     database.createItem({name: 'category', value: JSON.stringify(pushObject)});
@@ -72,7 +71,7 @@ const FormCategoryScreen = ({navigation, route}: any) => {
       ToastAndroid.SHORT,
       ToastAndroid.CENTER,
     );
-    setCategoryTitleInput('')
+    setCategoryTitleInput('');
     loadItems();
   };
   const handlerActionCategory = () => {
@@ -102,11 +101,9 @@ const FormCategoryScreen = ({navigation, route}: any) => {
   };
   const handlerEditCategory = ({
     id: id,
-    // value: value,
     name: name,
   }: {
     id: number;
-    // value: string;
     name: string;
   }) => {
     if (categoryEditId === id) {
@@ -137,35 +134,15 @@ const FormCategoryScreen = ({navigation, route}: any) => {
         <Text style={styles.HeaderText}>Добавление категории</Text>
         <View style={styles.EmptyView} />
       </View>
-      <View style={styles.InputContainer}>
-        <TextInput
-          placeholder="Категория название на русском"
-          value={categoryTitleInput}
-          onChangeText={text => {
-            setCategoryTitleInput(text);
-            //   searchCoffee(text);
-          }}
-          placeholderTextColor={COLORS.primaryLightGreyHex}
-          style={styles.InputText}
-        />
-      </View>
-      {/* <View style={styles.InputContainer}>
-        <TextInput
-          placeholder="Категория название на английском"
-          value={categoryValueInput}
-          onChangeText={text => {
-            setCategoryValueInput(text);
-            //   searchCoffee(text);
-          }}
-          placeholderTextColor={COLORS.primaryLightGreyHex}
-          style={styles.InputText}
-        />
-      </View> */}
-      <View>
-        <Text onPress={handlerActionCategory} style={styles.Button}>
-          {categoryEditId ? ' Изменить Категорию' : 'Создать категорию'}
-        </Text>
-      </View>
+      <Input
+        placeholder="Категория название на русском"
+        setValue={setCategoryTitleInput}
+        value={categoryTitleInput}
+      />
+      <Button
+        handlerAction={handlerActionCategory}
+        text={categoryEditId ? ' Изменить Категорию' : 'Создать категорию'}
+      />
       <Text style={styles.HeaderText}>Категории</Text>
       <ScrollView style={styles.List}>
         {categoryData?.length > 0 ? (

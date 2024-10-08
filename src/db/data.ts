@@ -1,8 +1,9 @@
-import {IDatabaseData} from '../types/dataType';
+import {IDatabaseData, IRecipe} from '../types/dataType';
 import database from './database';
 export const ConstantsDbName = {
   category: 'category',
   product: 'product',
+  formula: 'formula',
 };
 export const ConstantsFavoriteCategory = {
   addition: 'Дополнительно',
@@ -22,41 +23,76 @@ interface IProducts {
   category: string | number;
   quantity: string;
   unit: string;
+  recipe: IRecipe[];
 }
+
+const productsAdditional: IProducts[] = [
+  {
+    title: 'Сироп',
+    category: ConstantsFavoriteCategory.addition,
+    quantity: '0',
+    unit: 'мл',
+    recipe: [],
+  },
+  {
+    title: 'Молоко',
+    category: ConstantsFavoriteCategory.addition,
+    quantity: '0',
+    unit: 'мл',
+    recipe: [],
+  },
+  {
+    title: 'Зерна',
+    category: ConstantsFavoriteCategory.addition,
+    quantity: '0',
+    unit: 'гр',
+    recipe: [],
+  },
+];
 const products: IProducts[] = [
-  {title: 'Аура 0.5л газ', category: 'Вода', quantity: '0', unit: 'шт'},
-  {title: 'NutAndGo ', category: 'Батончики', quantity: '0', unit: 'шт'},
-  {title: 'Аура 0.5 газ', category: 'Вода', quantity: '0', unit: 'шт'},
+  {
+    title: 'Аура 0.5л газ',
+    category: 'Вода',
+    quantity: '0',
+    unit: 'шт',
+    recipe: [],
+  },
+  {
+    title: 'NutAndGo ',
+    category: 'Батончики',
+    quantity: '0',
+    unit: 'шт',
+    recipe: [],
+  },
+  {
+    title: 'Аура 0.5 газ',
+    category: 'Вода',
+    quantity: '0',
+    unit: 'шт',
+    recipe: [],
+  },
   {
     title: 'Капучино M',
     category: ConstantsFavoriteCategory.coffee,
     quantity: '0',
     unit: 'стакан',
+    recipe: [],
   },
   {
     title: 'Капучино L',
     category: ConstantsFavoriteCategory.coffee,
     quantity: '0',
     unit: 'стакан',
+    recipe: [],
   },
   {
     title: 'Американо M',
     category: ConstantsFavoriteCategory.coffee,
     quantity: '0',
     unit: 'стакан',
+    recipe: [],
   },
-  {
-    title: 'Сироп',
-    category: ConstantsFavoriteCategory.addition,
-    quantity: '0',
-    unit: 'порция',
-  },
-  {
-    title: 'Молоко',
-    category: ConstantsFavoriteCategory.addition,
-    quantity: '0',
-    unit: 'порция',
-  },
+  ...productsAdditional,
 ];
 export const createStandardData = () => {
   database.getItems((itemsDb: IDatabaseData[]) => {

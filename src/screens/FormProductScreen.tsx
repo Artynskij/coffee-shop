@@ -13,7 +13,6 @@ import {COLORS, FONTSIZE, GLOBALSTYLE} from '../theme/theme';
 import {useState} from 'react';
 import GradientBGIcon from '../components/GradientBGIcon';
 import {
-  ICategory,
   IDatabaseData,
   IProduct,
   IRecipe,
@@ -26,8 +25,9 @@ import {Input} from '../components/UI/Input';
 import {Select} from '../components/UI/Select';
 import {Button} from '../components/UI/Button';
 import {ConstantsDbName, ConstantsFavoriteCategory} from '../db/data';
+import {CounterValue} from '../components/CounterValue';
 
-const FormProductScreen = ({navigation, route}: any) => {
+const FormProductScreen = ({navigation}: any) => {
   // const categoryStore = useStore((state: any) => state.category);
   const [productTitleInput, setProductTitleInput] = useState<string>('');
   const [productUnitInput, setProductUnitInput] = useState<string>('');
@@ -100,6 +100,7 @@ const FormProductScreen = ({navigation, route}: any) => {
       unit: productUnitInput.toLocaleLowerCase(),
       quantity: productQuantityInput,
       category: selectedProductCategory?.key as number,
+      recipe: recipe,
     };
     database.updateItem({
       id: productEditId,
@@ -124,6 +125,7 @@ const FormProductScreen = ({navigation, route}: any) => {
       unit: productUnitInput.toLocaleLowerCase(),
       quantity: productQuantityInput,
       category: selectedProductCategory?.key as number,
+      recipe: recipe,
     };
 
     database.createItem({
@@ -156,28 +158,22 @@ const FormProductScreen = ({navigation, route}: any) => {
   };
   const handlerEditCategory = ({
     id: id,
-    name: name,
-    quantity: quantity,
-    unit: unit,
-    category: category,
+    productValue: productValue,
   }: {
     id: number;
-    name: string;
-    quantity: string;
-    unit: string;
-    category: number;
+    productValue: IProduct;
   }) => {
     if (productEditId === id) {
       clearInputs();
       return;
     }
-    setProductTitleInput(name);
-
-    setProductQuantityInput(quantity);
-    setProductUnitInput(unit);
-    database.getItemById(category, item => {
+    setProductTitleInput(productValue.title);
+    setProductQuantityInput(productValue.quantity);
+    setProductUnitInput(productValue.unit);
+    setRecipe(productValue.recipe);
+    database.getItemById(productValue.category, item => {
       setSelectedProductCategory({
-        key: category,
+        key: productValue.category,
         label: JSON.parse(item.value).title,
       });
     });
@@ -185,11 +181,17 @@ const FormProductScreen = ({navigation, route}: any) => {
     setProductEditId(id);
   };
   const handlerRecipeSelect = (option: ISelectOption) => {
-    setRecipe([...recipe, {category: option.key, count: 0}]);
+    const haveRecipe = recipe.find(r => r.category === option.key);
+    if (!haveRecipe) {
+      setRecipe(prevRecipe => [
+        ...prevRecipe,
+        {category: option.key, count: 1},
+      ]);
+    }
   };
   return (
     <View style={styles.ScreenContainer}>
-      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <StatusBar backgroundColor={GLOBALSTYLE.COLORS.primaryBlackHex} />
       <View style={styles.HeaderContainer}>
         <TouchableOpacity
           onPress={() => {
@@ -233,15 +235,15 @@ const FormProductScreen = ({navigation, route}: any) => {
         altText="Нету категорий"
         notSelectedText="Выбрать категорию"
       />
-      <View>
-        <Text style={{color: 'white', fontSize: GLOBALSTYLE.FONTSIZE.size_18}}>
-          Рецепт
-        </Text>
-      </View>
+
+      <Text style={{color: 'white', fontSize: GLOBALSTYLE.FONTSIZE.size_18}}>
+        Рецепт
+      </Text>
+
       <Select
         data={productData
           ?.filter(
-            //поиск кегории дполнительно
+            //поиск кегории дополнительно
             product =>
               JSON.parse(product.value).category ===
               categoryData.find(
@@ -262,57 +264,76 @@ const FormProductScreen = ({navigation, route}: any) => {
         altText="Нету допов"
         notSelectedText="Выбрать ингридиент"
       />
+      <View style={styles.RecipeContainer}>
+        {recipe.length > 0 ? (
+          <>
+            {recipe.map((recipeItem, index) => {
+              return (
+                <View style={styles.RecipeItem} key={index}>
+                  <View style={{display: 'flex'}}>
+                    <Text style={styles.RecipeTitle} key={index}>
+                      {
+                        JSON.parse(
+                          productData.find(
+                            prod => prod.id === recipeItem.category,
+                          )?.value as string,
+                        ).title
+                      }
+                    </Text>
+                  </View>
+                  <View>
+                    <CounterValue
+                      decrementQuantityHandler={() => {
+                        const updatedRecipe = recipe
+                          .map((recipeItem, i) => {
+                            return i === index && recipeItem.count > 0
+                              ? {...recipeItem, count: recipeItem.count - 1}
+                              : recipeItem;
+                          })
+                          .filter(item => item.count > 0);
 
-      {recipe.length > 0 ? (
-        <View>
-          {recipe.map((recipeItem, index) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  const newRecipe = recipe;
-                  recipe[index].count = recipeItem.count + 1;
-                  setRecipe(newRecipe);
-                }}>
-                <Text style={{color: 'white'}} key={index}>
-                  {
-                    JSON.parse(
-                      productData.find(prod => prod.id === recipeItem.category)
-                        ?.value as string,
-                    ).title
-                  }{' '}
-                  - {recipeItem.count}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      ) : (
-        ''
-      )}
+                        setRecipe(updatedRecipe);
+                      }}
+                      incrementQuantityHandler={() => {
+                        const updatedRecipe = recipe.map((recipeItem, i) =>
+                          i === index
+                            ? {...recipeItem, count: recipeItem.count + 1}
+                            : recipeItem,
+                        );
+                        setRecipe(updatedRecipe);
+                      }}
+                      value={recipeItem.count}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        ) : (
+          ''
+        )}
+      </View>
       <Button
         handlerAction={handlerActionProduct}
         text={productEditId ? ' Изменить товар' : 'Создать товар'}
       />
       <Text style={styles.HeaderText}>Товары</Text>
-      <ScrollView style={styles.List}>
+      <ScrollView style={styles.ListProduct}>
         {productData?.length > 0 ? (
           productData.map((item: IDatabaseData) => {
             const data: IProduct = JSON.parse(item.value);
             return (
-              <View style={styles.List_item} key={item.id}>
+              <View style={styles.ListProduct_item} key={item.id}>
                 <Text>
-                  {data.title}. 1{data.unit}. {data.quantity}. Category -{' '}
-                  {data.category}
+                  {data.title}. {data.quantity} {data.unit}. recipe -
+                  {data.recipe?.length > 0 ? 'true' : 'false'}
                 </Text>
                 <View style={styles.GroupButton}>
                   <TouchableOpacity
                     onPress={() => {
                       handlerEditCategory({
                         id: item.id,
-                        name: data.title,
-                        quantity: data.quantity,
-                        unit: data.unit,
-                        category: data.category,
+                        productValue: data,
                       });
                     }}>
                     {productEditId === item.id ? <IconCancel /> : <IconEdit />}
@@ -335,11 +356,52 @@ const FormProductScreen = ({navigation, route}: any) => {
   );
 };
 const styles = StyleSheet.create({
-  List: {
+  ScreenContainer: {
+    flex: 1,
+    backgroundColor: GLOBALSTYLE.COLORS.primaryBlackHex,
+    padding: GLOBALSTYLE.SPACING.space_15,
+  },
+  HeaderContainer: {
+    paddingVertical: GLOBALSTYLE.SPACING.space_15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  HeaderText: {
+    fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_semibold,
+    fontSize: FONTSIZE.size_20,
+    color: COLORS.primaryWhiteHex,
+  },
+  EmptyView: {
+    height: GLOBALSTYLE.SPACING.space_36,
+    width: GLOBALSTYLE.SPACING.space_36,
+  },
+  RecipeContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: GLOBALSTYLE.SPACING.space_10,
+  },
+  RecipeItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: GLOBALSTYLE.SPACING.space_4,
+    marginBottom: GLOBALSTYLE.SPACING.space_4,
+    borderBottomWidth: 2,
+    borderBottomColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
+  },
+  RecipeTitle: {
+    color: 'white',
+    paddingRight: GLOBALSTYLE.SPACING.space_10,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_18,
+  },
+  ListProduct: {
     display: 'flex',
     flexDirection: 'column',
   },
-  List_item: {
+  ListProduct_item: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -356,30 +418,6 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 5,
-  },
-
-  //   не мои стили
-  ScreenContainer: {
-    flex: 1,
-    backgroundColor: GLOBALSTYLE.COLORS.primaryBlackHex,
-    padding: GLOBALSTYLE.SPACING.space_15,
-  },
-  HeaderContainer: {
-    // paddingHorizontal: GLOBALSTYLE.SPACING.space_24,
-    paddingVertical: GLOBALSTYLE.SPACING.space_15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  HeaderText: {
-    fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_20,
-    color: COLORS.primaryWhiteHex,
-  },
-  EmptyView: {
-    height: GLOBALSTYLE.SPACING.space_36,
-    width: GLOBALSTYLE.SPACING.space_36,
   },
 });
 export default FormProductScreen;

@@ -3,20 +3,26 @@ import CustomIcon from './CustomIcon';
 import {GLOBALSTYLE} from '../theme/theme';
 interface ICounterValue {
   value: number;
+  decrementQuantityHandler: () => void;
+  incrementQuantityHandler: () => void;
 }
-export const CounterValue = () => {
-  const decrementQuantityHandler = () => {
-    setValue(value - 1);
-  };
-  const incrementQuantityHandler = () => {
-    setValue(value + 1);
-  };
+export const CounterValue = ({
+  value,
+  decrementQuantityHandler,
+  incrementQuantityHandler,
+}: ICounterValue) => {
+  // const decrementQuantityHandler = (value) => {
+  //   setValue(value - 1);
+  // };
+  // const incrementQuantityHandler = (value) => {
+  //   setValue(value + 1);
+  // };
   return (
     <View style={styles.CartItemSizeValueContainer}>
       <TouchableOpacity
         style={styles.CartItemIcon}
         onPress={() => {
-          decrementQuantityHandler(id, data.size);
+          decrementQuantityHandler();
         }}>
         <CustomIcon
           name="minus"
@@ -30,7 +36,7 @@ export const CounterValue = () => {
       <TouchableOpacity
         style={styles.CartItemIcon}
         onPress={() => {
-          incrementQuantityHandler(id, data.size);
+          incrementQuantityHandler();
         }}>
         <CustomIcon
           name="add"
@@ -43,10 +49,10 @@ export const CounterValue = () => {
 };
 const styles = StyleSheet.create({
   CartItemSizeValueContainer: {
-    flex: 1,
+    // flex: 1,
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 5,
   },
   CartItemIcon: {
     backgroundColor: GLOBALSTYLE.COLORS.primaryOrangeHex,

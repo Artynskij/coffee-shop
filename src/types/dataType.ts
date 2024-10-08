@@ -24,5 +24,5 @@ export interface IProduct {
   category: number;
   quantity: string;
   unit: string;
-  recipe?: IRecipe[] | null;
+  recipe: IRecipe[];
 }

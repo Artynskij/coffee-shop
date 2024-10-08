@@ -1,11 +1,9 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 import {
-  FlatList,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   ToastAndroid,
   TouchableOpacity,
   View,
@@ -18,6 +16,9 @@ import {IDatabaseData, IProduct} from '../types/dataType';
 
 import database from '../db/database';
 import {IconCancel, IconEdit} from '../components/Icons/Icons';
+import {Input} from '../components/UI/Input';
+import {Button} from '../components/UI/Button';
+import {Switcher} from '../components/Switcher';
 
 const getCategoriesFromData = (
   productData: IDatabaseData[],
@@ -44,14 +45,9 @@ const getCategoriesFromData = (
   return categories;
 };
 
-const FormImportScreen = ({navigation, route}: any) => {
+const FormImportScreen = ({navigation}: any) => {
   const [categoryData, setCategoryData] = useState<IDatabaseData[]>([]);
   const [productQuantityInput, setProductQuantityInput] = useState<string>('');
-  const ListRef: any = useRef<FlatList>();
-  const [categoryIndex, setCategoryIndex] = useState({
-    index: 0,
-    category: categoryData[0],
-  });
 
   const [productData, setProductData] = useState<IDatabaseData[]>([]);
 
@@ -97,12 +93,13 @@ const FormImportScreen = ({navigation, route}: any) => {
   };
   const editProduct = () => {
     database.getItemById(productEditId, (item: IDatabaseData) => {
-      const productValue = JSON.parse(item.value);
+      const productValue: IProduct = JSON.parse(item.value);
       const pushObject: IProduct = {
         category: productValue.category,
         title: productValue.title,
         unit: productValue.unit,
         quantity: (+productValue.quantity + +productQuantityInput).toString(),
+        recipe: productValue.recipe,
       };
       database.updateItem({
         id: productEditId,
@@ -160,78 +157,34 @@ const FormImportScreen = ({navigation, route}: any) => {
         <Text style={styles.HeaderText}>Добавление привоз</Text>
         <View style={styles.EmptyView} />
       </View>
-
-      <View style={styles.InputContainer}>
-        <TextInput
-          placeholder="Количество в цифрах"
-          value={productQuantityInput}
-          onChangeText={text => {
-            setProductQuantityInput(text);
-            //   searchCoffee(text);
-          }}
-          placeholderTextColor={COLORS.primaryLightGreyHex}
-          style={styles.InputText}
-        />
-      </View>
-
-      <View>
-        <Text onPress={handlerActionProduct} style={styles.Button}>
-          {productEditId ? ' Добавить привоз' : 'Выберите товар'}
-        </Text>
-      </View>
+      <Input
+        placeholder="Количество в цифрах"
+        value={productQuantityInput}
+        setValue={setProductQuantityInput}
+      />
+      <Button
+        handlerAction={handlerActionProduct}
+        text={productEditId ? ' Добавить привоз' : 'Выберите товар'}
+      />
       <Text style={styles.HeaderText}>Товары</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.CategoryScrollViewStyle}>
-        {categoryData.map((data: IDatabaseData, index: number) => (
-          <View
-            key={index.toString()}
-            style={styles.CategoryScrollViewContainer}>
-            <TouchableOpacity
-              style={styles.CategoryScrollViewItem}
-              onPress={() => {
-                ListRef?.current?.scrollToOffset({
-                  animated: true,
-                  offset: 0,
-                });
-                setCategoryIndex({
-                  index: index,
-                  category: categoryData[index],
-                });
-                database.getItems((items: IDatabaseData[]) => {
-                  const filteredData =
-                    categoryData[index].id === 0
-                      ? items.filter(item => item.name === 'product')
-                      : items.filter(item => {
-                          return (
-                            item.name === 'product' &&
-                            JSON.parse(item.value).category ===
-                              categoryData[index].id
-                          );
-                        });
-                  setProductData(filteredData);
-                });
-              }}>
-              <Text
-                style={[
-                  styles.CategoryText,
-                  categoryIndex.index == index
-                    ? {color: COLORS.primaryOrangeHex}
-                    : {},
-                ]}>
-                {JSON.parse(data.value).title}
-              </Text>
-              {categoryIndex.index == index ? (
-                <View style={styles.ActiveCategory} />
-              ) : (
-                <></>
-              )}
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
-      <Text style={{color: 'white'}}>123</Text>
+      <Switcher
+        titles={categoryData}
+        callbackFunc={indexSwitcher => {
+          database.getItems((items: IDatabaseData[]) => {
+            const filteredData =
+              categoryData[indexSwitcher].id === 0
+                ? items.filter(item => item.name === 'product')
+                : items.filter(item => {
+                    return (
+                      item.name === 'product' &&
+                      JSON.parse(item.value).category ===
+                        categoryData[indexSwitcher].id
+                    );
+                  });
+            setProductData(filteredData);
+          });
+        }}
+      />
       <ScrollView style={styles.List}>
         {productData?.length > 0 ? (
           productData.map((item: IDatabaseData) => {
@@ -336,30 +289,6 @@ const styles = StyleSheet.create({
   EmptyView: {
     height: GLOBALSTYLE.SPACING.space_36,
     width: GLOBALSTYLE.SPACING.space_36,
-  },
-  CategoryScrollViewStyle: {
-    // paddingHorizontal: GLOBALSTYLE.SPACING.space_20,
-    marginBottom: GLOBALSTYLE.SPACING.space_20,
-    borderBottomWidth: 10,
-    borderBottomColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
-  },
-  CategoryScrollViewContainer: {
-    paddingHorizontal: GLOBALSTYLE.SPACING.space_15,
-  },
-  CategoryScrollViewItem: {
-    alignItems: 'center',
-  },
-  CategoryText: {
-    fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_16,
-    color: COLORS.primaryLightGreyHex,
-    marginBottom: GLOBALSTYLE.SPACING.space_4,
-  },
-  ActiveCategory: {
-    height: GLOBALSTYLE.SPACING.space_10,
-    width: GLOBALSTYLE.SPACING.space_10,
-    borderRadius: GLOBALSTYLE.BORDERRADIUS.radius_10,
-    backgroundColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
   },
 });
 export default FormImportScreen;
