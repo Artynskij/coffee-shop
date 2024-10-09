@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import {COLORS, FONTSIZE, GLOBALSTYLE} from '../theme/theme';
+import {GLOBALSTYLE} from '../theme/theme';
 import {useState} from 'react';
 import GradientBGIcon from '../components/GradientBGIcon';
 import {
@@ -24,14 +24,41 @@ import {IconCancel, IconDelete, IconEdit} from '../components/Icons/Icons';
 import {Input} from '../components/UI/Input';
 import {Select} from '../components/UI/Select';
 import {Button} from '../components/UI/Button';
-import {ConstantsDbName, ConstantsFavoriteCategory} from '../db/data';
+import {
+  ConstantsDbName,
+  ConstantsCategory,
+  // getCategoriesFromData,
+} from '../db/data';
 import {CounterValue} from '../components/CounterValue';
-
+import {Switcher} from '../components/Switcher';
+const getCategoriesFromData = (
+  productData: IDatabaseData[],
+  categoryData: IDatabaseData[],
+) => {
+  let temp: any = {};
+  for (let i = 0; i < productData.length; i++) {
+    if (temp[JSON.parse(productData[i].value).category] === undefined) {
+      temp[JSON.parse(productData[i].value).category] = 1;
+    } else {
+      temp[JSON.parse(productData[i].value).category]++;
+    }
+  }
+  const categories = Object.keys(temp).map((temp: string) => {
+    const findCategory =
+      categoryData.find(item => item.id === +temp) || categoryData[0];
+    return findCategory;
+  });
+  categories.unshift({
+    name: 'category',
+    id: 0,
+    value: JSON.stringify({title: 'All'}),
+  });
+  return categories;
+};
 const FormProductScreen = ({navigation}: any) => {
   // const categoryStore = useStore((state: any) => state.category);
   const [productTitleInput, setProductTitleInput] = useState<string>('');
   const [productUnitInput, setProductUnitInput] = useState<string>('');
-  const [productQuantityInput, setProductQuantityInput] = useState<string>('');
   const [selectedProductCategory, setSelectedProductCategory] = useState<{
     key: number;
     label: string;
@@ -55,20 +82,12 @@ const FormProductScreen = ({navigation}: any) => {
       );
       return false;
     }
-    if (Number.isNaN(+productQuantityInput) || +productQuantityInput < 0) {
-      ToastAndroid.showWithGravity(
-        `Вы ввели какую-то шляпу в количестве`,
-        ToastAndroid.SHORT,
-        ToastAndroid.CENTER,
-      );
-      return false;
-    }
+
     return true;
   };
   const clearInputs = () => {
     setProductTitleInput('');
     setProductUnitInput('');
-    setProductQuantityInput('');
     setSelectedProductCategory(null);
     setProductEditId(0);
     setRecipe([]);
@@ -81,8 +100,7 @@ const FormProductScreen = ({navigation}: any) => {
       const products = data.filter(item => {
         return item.name === ConstantsDbName.product;
       });
-
-      setCategoryData(categories);
+      setCategoryData(getCategoriesFromData(products, categories));
       setProductData(products);
     });
   };
@@ -95,10 +113,13 @@ const FormProductScreen = ({navigation}: any) => {
       );
       return;
     }
+    const _editProduct = productData.find(
+      item => item.id === productEditId,
+    ) as IDatabaseData;
     const pushObject: IProduct = {
       title: productTitleInput,
       unit: productUnitInput.toLocaleLowerCase(),
-      quantity: productQuantityInput,
+      quantity: JSON.parse(_editProduct?.value).quantity,
       category: selectedProductCategory?.key as number,
       recipe: recipe,
     };
@@ -123,7 +144,7 @@ const FormProductScreen = ({navigation}: any) => {
     const pushObject: IProduct = {
       title: productTitleInput,
       unit: productUnitInput.toLocaleLowerCase(),
-      quantity: productQuantityInput,
+      quantity: '0',
       category: selectedProductCategory?.key as number,
       recipe: recipe,
     };
@@ -168,7 +189,6 @@ const FormProductScreen = ({navigation}: any) => {
       return;
     }
     setProductTitleInput(productValue.title);
-    setProductQuantityInput(productValue.quantity);
     setProductUnitInput(productValue.unit);
     setRecipe(productValue.recipe);
     database.getItemById(productValue.category, item => {
@@ -218,11 +238,6 @@ const FormProductScreen = ({navigation}: any) => {
         value={productUnitInput}
         setValue={setProductUnitInput}
       />
-      <Input
-        placeholder="Количество в цифрах"
-        value={productQuantityInput}
-        setValue={setProductQuantityInput}
-      />
       <Select
         data={categoryData?.map(item => {
           return {
@@ -249,7 +264,7 @@ const FormProductScreen = ({navigation}: any) => {
               categoryData.find(
                 category =>
                   JSON.parse(category.value).title ===
-                  ConstantsFavoriteCategory.addition,
+                  ConstantsCategory.addition,
               )?.id,
           )
           .map((product: IDatabaseData) => {
@@ -318,6 +333,24 @@ const FormProductScreen = ({navigation}: any) => {
         text={productEditId ? ' Изменить товар' : 'Создать товар'}
       />
       <Text style={styles.HeaderText}>Товары</Text>
+      <Switcher
+        titles={categoryData}
+        callbackFunc={indexSwitcher => {
+          database.getItems((items: IDatabaseData[]) => {
+            const filteredData =
+              categoryData[indexSwitcher].id === 0
+                ? items.filter(item => item.name === 'product')
+                : items.filter(item => {
+                    return (
+                      item.name === 'product' &&
+                      JSON.parse(item.value).category ===
+                        categoryData[indexSwitcher].id
+                    );
+                  });
+            setProductData(filteredData);
+          });
+        }}
+      />
       <ScrollView style={styles.ListProduct}>
         {productData?.length > 0 ? (
           productData.map((item: IDatabaseData) => {
@@ -370,8 +403,8 @@ const styles = StyleSheet.create({
 
   HeaderText: {
     fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_20,
-    color: COLORS.primaryWhiteHex,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_20,
+    color: GLOBALSTYLE.COLORS.primaryWhiteHex,
   },
   EmptyView: {
     height: GLOBALSTYLE.SPACING.space_36,
@@ -407,12 +440,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: COLORS.primaryOrangeHex,
+    borderColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
     padding: GLOBALSTYLE.SPACING.space_10,
     backgroundColor: GLOBALSTYLE.COLORS.primaryWhiteHex,
     color: GLOBALSTYLE.COLORS.primaryLightGreyHex,
     marginBottom: 5,
-    fontSize: FONTSIZE.size_18,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_18,
   },
   GroupButton: {
     display: 'flex',

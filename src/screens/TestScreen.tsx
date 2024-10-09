@@ -25,7 +25,7 @@ import {FlatList} from 'react-native';
 import {Dimensions} from 'react-native';
 import Database from '../db/database';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import { createStandardData } from '../db/data';
+import {createStandardData} from '../db/data';
 
 const getCategoriesFromData = (data: any) => {
   let temp: any = {};
@@ -50,8 +50,6 @@ const TestScreen = ({navigation}: any) => {
     getCategoriesFromData(CoffeeList),
   );
   const [itemsDB, setItemsDB] = useState<any>();
-  const [nameText, setNameText] = useState('');
-  const [surnameText, setSurnameText] = useState('');
   const [categoryIndex, setCategoryIndex] = useState({
     index: 0,
     category: categories[0],
@@ -89,6 +87,9 @@ const TestScreen = ({navigation}: any) => {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.push('FormImport')}>
         <Text style={styles.Button}>Добавить привоз</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.push('FormFormula')}>
+        <Text style={styles.Button}>Изменить порционность</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => createStandardData()}>
         <Text style={styles.Button}>Добавить дефолтные категории и товары</Text>

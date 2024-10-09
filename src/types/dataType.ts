@@ -26,3 +26,7 @@ export interface IProduct {
   unit: string;
   recipe: IRecipe[];
 }
+export interface IFormula {
+  title: string;
+  count: number;
+}

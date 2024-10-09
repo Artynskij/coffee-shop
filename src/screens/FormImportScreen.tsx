@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import {COLORS, FONTSIZE, GLOBALSTYLE} from '../theme/theme';
+import {GLOBALSTYLE} from '../theme/theme';
 import {useState} from 'react';
 import GradientBGIcon from '../components/GradientBGIcon';
 import {IDatabaseData, IProduct} from '../types/dataType';
@@ -19,7 +19,7 @@ import {IconCancel, IconEdit} from '../components/Icons/Icons';
 import {Input} from '../components/UI/Input';
 import {Button} from '../components/UI/Button';
 import {Switcher} from '../components/Switcher';
-
+// import {getCategoriesFromData} from '../db/data';
 const getCategoriesFromData = (
   productData: IDatabaseData[],
   categoryData: IDatabaseData[],
@@ -44,13 +44,10 @@ const getCategoriesFromData = (
   });
   return categories;
 };
-
 const FormImportScreen = ({navigation}: any) => {
   const [categoryData, setCategoryData] = useState<IDatabaseData[]>([]);
   const [productQuantityInput, setProductQuantityInput] = useState<string>('');
-
   const [productData, setProductData] = useState<IDatabaseData[]>([]);
-
   const [productEditId, setProductEditId] = useState<number>(0);
 
   useEffect(() => {
@@ -87,6 +84,9 @@ const FormImportScreen = ({navigation}: any) => {
       const products = data.filter(item => {
         return item.name === 'product';
       });
+      console.log(categories);
+      console.log(products);
+
       setCategoryData(getCategoriesFromData(products, categories));
       setProductData(products);
     });
@@ -112,7 +112,6 @@ const FormImportScreen = ({navigation}: any) => {
         ToastAndroid.CENTER,
       );
       clearInputs();
-      loadItems();
     });
   };
   const handlerActionProduct = () => {
@@ -141,7 +140,7 @@ const FormImportScreen = ({navigation}: any) => {
 
   return (
     <View style={styles.ScreenContainer}>
-      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <StatusBar backgroundColor={GLOBALSTYLE.COLORS.primaryBlackHex} />
       <View style={styles.HeaderContainer}>
         <TouchableOpacity
           onPress={() => {
@@ -216,8 +215,8 @@ const FormImportScreen = ({navigation}: any) => {
 };
 const styles = StyleSheet.create({
   Button: {
-    fontSize: FONTSIZE.size_20,
-    backgroundColor: COLORS.primaryOrangeHex,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_20,
+    backgroundColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
     padding: 12,
     marginBottom: 5,
     borderRadius: 15,
@@ -232,12 +231,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: COLORS.primaryOrangeHex,
+    borderColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
     padding: GLOBALSTYLE.SPACING.space_10,
     backgroundColor: GLOBALSTYLE.COLORS.primaryWhiteHex,
     color: GLOBALSTYLE.COLORS.primaryLightGreyHex,
     marginBottom: 5,
-    fontSize: FONTSIZE.size_18,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_18,
   },
   GroupButton: {
     display: 'flex',
@@ -252,7 +251,6 @@ const styles = StyleSheet.create({
 
   ScreenContainer: {
     flex: 1,
-    // alignItems: 'flex-start',
     backgroundColor: GLOBALSTYLE.COLORS.primaryBlackHex,
     padding: GLOBALSTYLE.SPACING.space_15,
   },
@@ -266,7 +264,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
 
     borderRadius: GLOBALSTYLE.BORDERRADIUS.radius_20,
-    backgroundColor: COLORS.primaryDarkGreyHex,
+    backgroundColor: GLOBALSTYLE.COLORS.primaryDarkGreyHex,
     alignItems: 'center',
     borderWidth: 3,
     borderColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
@@ -276,15 +274,15 @@ const styles = StyleSheet.create({
     flex: 1,
     height: GLOBALSTYLE.SPACING.space_20 * 3,
     fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_14,
+    color: GLOBALSTYLE.COLORS.primaryWhiteHex,
     paddingHorizontal: GLOBALSTYLE.SPACING.space_10,
   },
 
   HeaderText: {
     fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_20,
-    color: COLORS.primaryWhiteHex,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_20,
+    color: GLOBALSTYLE.COLORS.primaryWhiteHex,
   },
   EmptyView: {
     height: GLOBALSTYLE.SPACING.space_36,

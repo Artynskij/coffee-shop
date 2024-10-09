@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {COLORS, FONTSIZE, GLOBALSTYLE} from '../theme/theme';
+import {GLOBALSTYLE} from '../theme/theme';
 import {useState} from 'react';
 import GradientBGIcon from '../components/GradientBGIcon';
 import {ICategory, IDatabaseData} from '../types/dataType';
@@ -118,7 +118,7 @@ const FormCategoryScreen = ({navigation}: any) => {
   };
   return (
     <View style={styles.ScreenContainer}>
-      <StatusBar backgroundColor={COLORS.primaryBlackHex} />
+      <StatusBar backgroundColor={GLOBALSTYLE.COLORS.primaryBlackHex} />
       <View style={styles.HeaderContainer}>
         <TouchableOpacity
           onPress={() => {
@@ -180,13 +180,6 @@ const FormCategoryScreen = ({navigation}: any) => {
   );
 };
 const styles = StyleSheet.create({
-  Button: {
-    fontSize: FONTSIZE.size_20,
-    backgroundColor: COLORS.primaryOrangeHex,
-    padding: 12,
-    marginBottom: 5,
-    borderRadius: 15,
-  },
   List: {
     display: 'flex',
     flexDirection: 'column',
@@ -197,12 +190,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: COLORS.primaryOrangeHex,
+    borderColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
     padding: GLOBALSTYLE.SPACING.space_10,
     backgroundColor: GLOBALSTYLE.COLORS.primaryWhiteHex,
     color: GLOBALSTYLE.COLORS.primaryLightGreyHex,
     marginBottom: 5,
-    fontSize: FONTSIZE.size_18,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_18,
   },
   GroupButton: {
     display: 'flex',
@@ -222,29 +215,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  InputContainer: {
-    flexDirection: 'row',
-    // margin: GLOBALSTYLE.SPACING.space_30,
-    borderRadius: GLOBALSTYLE.BORDERRADIUS.radius_20,
-    backgroundColor: COLORS.primaryDarkGreyHex,
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
-    marginBottom: GLOBALSTYLE.SPACING.space_10,
-  },
-  InputText: {
-    flex: 1,
-    height: GLOBALSTYLE.SPACING.space_20 * 3,
-    fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_medium,
-    fontSize: FONTSIZE.size_14,
-    color: COLORS.primaryWhiteHex,
-    paddingHorizontal: GLOBALSTYLE.SPACING.space_10,
-  },
 
   HeaderText: {
     fontFamily: GLOBALSTYLE.FONTFAMILY.poppins_semibold,
-    fontSize: FONTSIZE.size_20,
-    color: COLORS.primaryWhiteHex,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_20,
+    color: GLOBALSTYLE.COLORS.primaryWhiteHex,
   },
   EmptyView: {
     height: GLOBALSTYLE.SPACING.space_36,

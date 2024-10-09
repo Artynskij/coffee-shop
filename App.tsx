@@ -8,6 +8,7 @@ import SplashScreen from 'react-native-splash-screen';
 import FormCategoryScreen from './src/screens/FormCategoryScreen';
 import FormProductScreen from './src/screens/FormProductScreen';
 import FormImportScreen from './src/screens/FormImportScreen';
+import FormFormulaScreen from './src/screens/FormFormulaScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,10 @@ const App = () => {
         <Stack.Screen
           name="FormImport"
           component={FormImportScreen}
+          options={{animation: 'slide_from_bottom'}}></Stack.Screen>
+        <Stack.Screen
+          name="FormFormula"
+          component={FormFormulaScreen}
           options={{animation: 'slide_from_bottom'}}></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
