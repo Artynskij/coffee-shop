@@ -29,6 +29,7 @@ interface _IProducts {
   title: string;
   category: string | number;
   quantity: string;
+  quantityReverse: string;
   unit: string;
   recipe: IRecipe[];
 }
@@ -37,6 +38,7 @@ const productsAdditional: _IProducts[] = [
     title: ConstantsAdditionProduct.syrup,
     category: ConstantsCategory.addition,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'мл',
     recipe: [],
   },
@@ -44,6 +46,7 @@ const productsAdditional: _IProducts[] = [
     title: ConstantsAdditionProduct.milk,
     category: ConstantsCategory.addition,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'мл',
     recipe: [],
   },
@@ -51,6 +54,7 @@ const productsAdditional: _IProducts[] = [
     title: ConstantsAdditionProduct.beans,
     category: ConstantsCategory.addition,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'гр',
     recipe: [],
   },
@@ -58,6 +62,7 @@ const productsAdditional: _IProducts[] = [
     title: ConstantsAdditionProduct.juice,
     category: ConstantsCategory.addition,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'мл',
     recipe: [],
   },
@@ -67,6 +72,7 @@ const _products: _IProducts[] = [
     title: 'Аура 0.5л газ',
     category: 'Вода',
     quantity: '0',
+    quantityReverse: '0',
     unit: 'шт',
     recipe: [],
   },
@@ -74,6 +80,7 @@ const _products: _IProducts[] = [
     title: 'NutAndGo ',
     category: 'Батончики',
     quantity: '0',
+    quantityReverse: '0',
     unit: 'шт',
     recipe: [],
   },
@@ -81,6 +88,7 @@ const _products: _IProducts[] = [
     title: 'Аура 0.5 газ',
     category: 'Вода',
     quantity: '0',
+    quantityReverse: '0',
     unit: 'шт',
     recipe: [],
   },
@@ -88,6 +96,7 @@ const _products: _IProducts[] = [
     title: 'Капучино M',
     category: ConstantsCategory.coffee,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'стакан',
     recipe: [],
   },
@@ -95,6 +104,7 @@ const _products: _IProducts[] = [
     title: 'Капучино L',
     category: ConstantsCategory.coffee,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'стакан',
     recipe: [],
   },
@@ -102,6 +112,7 @@ const _products: _IProducts[] = [
     title: 'Американо M',
     category: ConstantsCategory.coffee,
     quantity: '0',
+    quantityReverse: '0',
     unit: 'стакан',
     recipe: [],
   },
@@ -114,90 +125,103 @@ const _formulaPortion = [
   {title: ConstantsAdditionProduct.juice, count: 50},
   {title: ConstantsAdditionProduct.milk, count: 100},
 ];
-export const createStandardData = () => {
-  // Доавление категорий
-  database.getItems((itemsDb: IDatabaseData[]) => {
-    _categories.forEach(cat => {
+export const createStandardData = async () => {
+  async function createCategory() {
+    const itemsDb = await database.getItems();
+
+    // Добавление категорий
+    for (const cat of _categories) {
       const findCat = itemsDb.find(
         item => JSON.parse(item.value).title === cat,
       );
       if (!findCat) {
-        database.createItem({
+        await database.createItem({
           name: ConstantsDbName.category,
           value: JSON.stringify({title: cat}),
         });
       }
-    });
-  });
-  // Доавление Продуктов
-  database.getItems((itemsDb: IDatabaseData[]) => {
+    }
+  }
+  async function createProduct() {
+    // Получение всех записей из базы данных
+
+    const itemsDb = await database.getItems();
+    // Добавление продуктов
     const categoriesInDb = itemsDb.filter(
       item => item.name === ConstantsDbName.category,
     );
-    _products.forEach(product => {
-      const idCat = categoriesInDb.find(
-        cat => JSON.parse(cat.value).title === product.category,
-      )?.id;
-      console.log(idCat);
+
+    for (const product of _products) {
+      const newProduct: _IProducts = JSON.parse(JSON.stringify(product));
+      const idCat = categoriesInDb.find(cat => {
+        return JSON.parse(cat.value).title === newProduct.category;
+      });
       if (idCat) {
-        product.category = +idCat;
+        newProduct.category = +idCat.id; // Присваиваем ID категории
       } else {
-        product.category = 0;
+        return;
       }
 
       const findProd = itemsDb.find(
-        item => JSON.parse(item.value).title === product.title,
+        item => JSON.parse(item.value).title === newProduct.title,
       );
       if (!findProd) {
-        database.createItem({
+        await database.createItem({
           name: ConstantsDbName.product,
-          value: JSON.stringify(product),
+          value: JSON.stringify(newProduct),
         });
       } else {
-        database.updateItem({
+        await database.updateItem({
           id: findProd.id,
           name: ConstantsDbName.product,
-          value: JSON.stringify(product),
+          value: JSON.stringify(newProduct),
         });
       }
-    });
-  });
-  // Доавление формул
-  database.getItems((itemsDb: IDatabaseData[]) => {
+    }
+  }
+  async function createFormula() {
+    const itemsDb = await database.getItems();
+    // Добавление формулы
     const formulaDb = itemsDb.find(
       item => item.name === ConstantsDbName.formula,
     );
-    if (formulaDb) {
-    } else {
-      database.createItem({
+    if (!formulaDb) {
+      await database.createItem({
         name: ConstantsDbName.formula,
         value: JSON.stringify(_formulaPortion),
       });
     }
-  });
+  }
+  try {
+    await createCategory();
+    await createProduct();
+    await createFormula();
+  } catch (error) {
+    console.error('Error creating standard data:', error);
+  }
 };
 
-// export const getCategoriesFromData = (
-//   productData: IDatabaseData[],
-//   categoryData: IDatabaseData[],
-// ) => {
-//   let temp: any = {};
-//   for (let i = 0; i < productData.length; i++) {
-//     if (temp[JSON.parse(productData[i].value).category] === undefined) {
-//       temp[JSON.parse(productData[i].value).category] = 1;
-//     } else {
-//       temp[JSON.parse(productData[i].value).category]++;
-//     }
-//   }
-//   const categories = Object.keys(temp).map((temp: string) => {
-//     const findCategory =
-//       categoryData.find(item => item.id === +temp) || categoryData[0];
-//     return findCategory;
-//   });
-//   categories.unshift({
-//     name: 'category',
-//     id: 0,
-//     value: JSON.stringify({title: 'All'}),
-//   });
-//   return categories;
-// };
+export const getCategoriesFromData = (
+  productData: IDatabaseData[],
+  categoryData: IDatabaseData[],
+) => {
+  let temp: any = {};
+  for (let i = 0; i < productData.length; i++) {
+    if (temp[JSON.parse(productData[i].value).category] === undefined) {
+      temp[JSON.parse(productData[i].value).category] = 1;
+    } else {
+      temp[JSON.parse(productData[i].value).category]++;
+    }
+  }
+  const categories = Object.keys(temp).map((temp: string) => {
+    const findCategory =
+      categoryData.find(item => item.id === +temp) || categoryData[0];
+    return findCategory;
+  });
+  categories.unshift({
+    name: 'category',
+    id: 0,
+    value: JSON.stringify({title: 'All'}),
+  });
+  return categories;
+};

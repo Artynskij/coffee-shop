@@ -26,13 +26,13 @@ const FormCategoryScreen = ({navigation}: any) => {
   useEffect(() => {
     loadItems();
   }, []);
-  const loadItems = () => {
-    database.getItems((data: IDatabaseData[]) => {
-      const categories = data.filter(item => {
-        return item.name === 'category';
-      });
-      setCategoryData(categories);
+  const loadItems = async () => {
+    const dataDb = await database.getItems();
+
+    const categories = dataDb.filter(item => {
+      return item.name === 'category';
     });
+    setCategoryData(categories);
   };
   const editCategory = () => {
     if (!categoryData) {
@@ -150,14 +150,15 @@ const FormCategoryScreen = ({navigation}: any) => {
             const data: ICategory = JSON.parse(item.value);
             return (
               <View style={styles.List_item} key={item.id}>
-                <Text>Категория: {data.title}.</Text>
+                <Text style={{color: GLOBALSTYLE.COLORS.primaryDarkGreyHex}}>
+                  Категория: {data.title}.
+                </Text>
                 <View style={styles.GroupButton}>
                   <TouchableOpacity
                     onPress={() => {
                       handlerEditCategory({
                         id: item.id,
                         name: data.title,
-                        // value: data.value,
                       });
                     }}>
                     {categoryEditId === item.id ? <IconCancel /> : <IconEdit />}
@@ -173,7 +174,9 @@ const FormCategoryScreen = ({navigation}: any) => {
             );
           })
         ) : (
-          <Text style={{color: 'white'}}>Нету существующих категорий.</Text>
+          <Text style={{color: GLOBALSTYLE.COLORS.primaryWhiteHex}}>
+            Нету существующих категорий.
+          </Text>
         )}
       </ScrollView>
     </View>
@@ -197,6 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     fontSize: GLOBALSTYLE.FONTSIZE.size_18,
   },
+
   GroupButton: {
     display: 'flex',
     flexDirection: 'row',

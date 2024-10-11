@@ -23,6 +23,8 @@ export interface IProduct {
   title: string;
   category: number;
   quantity: string;
+  quantityReverse: string;
+
   unit: string;
   recipe: IRecipe[];
 }

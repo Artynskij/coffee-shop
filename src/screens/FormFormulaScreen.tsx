@@ -28,17 +28,17 @@ const FormFormulaScreen = ({navigation}: any) => {
   useEffect(() => {
     loadItems();
   }, []);
-  const loadItems = () => {
-    database.getItems((data: IDatabaseData[]) => {
-      const formulaDb = data.find(item => {
-        return item.name === ConstantsDbName.formula;
-      }) as IDatabaseData;
+  const loadItems = async () => {
+    const dataDb = await database.getItems();
 
-      setFormulaData({
-        id: formulaDb?.id,
-        name: formulaDb?.name,
-        value: JSON.parse(formulaDb.value) as IFormula[],
-      });
+    const formulaDb = dataDb.find(item => {
+      return item.name === ConstantsDbName.formula;
+    }) as IDatabaseData;
+
+    setFormulaData({
+      id: formulaDb?.id,
+      name: formulaDb?.name,
+      value: JSON.parse(formulaDb.value) as IFormula[],
     });
   };
   const clearInputs = () => {
@@ -72,7 +72,7 @@ const FormFormulaScreen = ({navigation}: any) => {
     }
     return true;
   };
-  const handlerActionFormula = () => {
+  const handlerActionFormula = async () => {
     if (!validateData()) return;
     const newFormulaValue = formulaData?.value.map((item, index) => {
       if (index === formulaEditId) {
@@ -80,7 +80,7 @@ const FormFormulaScreen = ({navigation}: any) => {
       }
       return item;
     });
-    database.updateItem({
+    await database.updateItem({
       id: formulaData?.id as number,
       name: formulaData?.name as string,
       value: JSON.stringify(newFormulaValue),
@@ -136,7 +136,7 @@ const FormFormulaScreen = ({navigation}: any) => {
           formulaData?.value.map((data: IFormula, index: number) => {
             return (
               <View style={styles.ListProduct_item} key={index}>
-                <Text>
+                <Text style={{color: GLOBALSTYLE.COLORS.primaryDarkGreyHex}}>
                   Одна порция {data.title}. {data.count} условных едениц
                 </Text>
 

@@ -27,34 +27,12 @@ import {Button} from '../components/UI/Button';
 import {
   ConstantsDbName,
   ConstantsCategory,
+  getCategoriesFromData,
   // getCategoriesFromData,
 } from '../db/data';
 import {CounterValue} from '../components/CounterValue';
 import {Switcher} from '../components/Switcher';
-const getCategoriesFromData = (
-  productData: IDatabaseData[],
-  categoryData: IDatabaseData[],
-) => {
-  let temp: any = {};
-  for (let i = 0; i < productData.length; i++) {
-    if (temp[JSON.parse(productData[i].value).category] === undefined) {
-      temp[JSON.parse(productData[i].value).category] = 1;
-    } else {
-      temp[JSON.parse(productData[i].value).category]++;
-    }
-  }
-  const categories = Object.keys(temp).map((temp: string) => {
-    const findCategory =
-      categoryData.find(item => item.id === +temp) || categoryData[0];
-    return findCategory;
-  });
-  categories.unshift({
-    name: 'category',
-    id: 0,
-    value: JSON.stringify({title: 'All'}),
-  });
-  return categories;
-};
+
 const FormProductScreen = ({navigation}: any) => {
   // const categoryStore = useStore((state: any) => state.category);
   const [productTitleInput, setProductTitleInput] = useState<string>('');
@@ -70,9 +48,28 @@ const FormProductScreen = ({navigation}: any) => {
 
   const [categoryData, setCategoryData] = useState<IDatabaseData[]>([]);
   const [productData, setProductData] = useState<IDatabaseData[]>([]);
+  const [categoryOfProductData, setCategoryOfProductData] = useState<
+    IDatabaseData[]
+  >([]);
   useEffect(() => {
-    loadItems();
+    const firstRender = async () => {
+      await loadItems();
+    };
+    firstRender();
   }, []);
+  const loadItems = async () => {
+    const dataDb = await database.getItems();
+
+    const categories = dataDb.filter(item => {
+      return item.name === ConstantsDbName.category;
+    });
+    const products = dataDb.filter(item => {
+      return item.name === ConstantsDbName.product;
+    });
+    setCategoryOfProductData(getCategoriesFromData(products, categories));
+    setCategoryData(categories);
+    setProductData(products);
+  };
   const validateData = () => {
     if (!selectedProductCategory || !productTitleInput || !productUnitInput) {
       ToastAndroid.showWithGravity(
@@ -92,18 +89,7 @@ const FormProductScreen = ({navigation}: any) => {
     setProductEditId(0);
     setRecipe([]);
   };
-  const loadItems = () => {
-    database.getItems((data: IDatabaseData[]) => {
-      const categories = data.filter(item => {
-        return item.name === ConstantsDbName.category;
-      });
-      const products = data.filter(item => {
-        return item.name === ConstantsDbName.product;
-      });
-      setCategoryData(getCategoriesFromData(products, categories));
-      setProductData(products);
-    });
-  };
+
   const editProduct = () => {
     if (!productTitleInput) {
       ToastAndroid.showWithGravity(
@@ -120,6 +106,7 @@ const FormProductScreen = ({navigation}: any) => {
       title: productTitleInput,
       unit: productUnitInput.toLocaleLowerCase(),
       quantity: JSON.parse(_editProduct?.value).quantity,
+      quantityReverse: '0',
       category: selectedProductCategory?.key as number,
       recipe: recipe,
     };
@@ -145,6 +132,7 @@ const FormProductScreen = ({navigation}: any) => {
       title: productTitleInput,
       unit: productUnitInput.toLocaleLowerCase(),
       quantity: '0',
+      quantityReverse: '0',
       category: selectedProductCategory?.key as number,
       recipe: recipe,
     };
@@ -177,7 +165,7 @@ const FormProductScreen = ({navigation}: any) => {
     );
     loadItems();
   };
-  const handlerEditCategory = ({
+  const handlerEditCategory = async ({
     id: id,
     productValue: productValue,
   }: {
@@ -191,11 +179,11 @@ const FormProductScreen = ({navigation}: any) => {
     setProductTitleInput(productValue.title);
     setProductUnitInput(productValue.unit);
     setRecipe(productValue.recipe);
-    database.getItemById(productValue.category, item => {
-      setSelectedProductCategory({
-        key: productValue.category,
-        label: JSON.parse(item.value).title,
-      });
+    const categoryActive = await database.getItemById(productValue.category);
+
+    setSelectedProductCategory({
+      key: productValue.category,
+      label: JSON.parse(categoryActive.value).title,
     });
 
     setProductEditId(id);
@@ -333,31 +321,33 @@ const FormProductScreen = ({navigation}: any) => {
         text={productEditId ? ' Изменить товар' : 'Создать товар'}
       />
       <Text style={styles.HeaderText}>Товары</Text>
+
       <Switcher
-        titles={categoryData}
-        callbackFunc={indexSwitcher => {
-          database.getItems((items: IDatabaseData[]) => {
-            const filteredData =
-              categoryData[indexSwitcher].id === 0
-                ? items.filter(item => item.name === 'product')
-                : items.filter(item => {
-                    return (
-                      item.name === 'product' &&
-                      JSON.parse(item.value).category ===
-                        categoryData[indexSwitcher].id
-                    );
-                  });
-            setProductData(filteredData);
-          });
+        titles={categoryOfProductData}
+        callbackFunc={async indexSwitcher => {
+          const dataDb = await database.getItems();
+
+          const filteredData =
+            categoryOfProductData[indexSwitcher].id === 0
+              ? dataDb.filter(item => item.name === 'product')
+              : dataDb.filter(item => {
+                  return (
+                    item.name === 'product' &&
+                    JSON.parse(item.value).category ===
+                      categoryOfProductData[indexSwitcher].id
+                  );
+                });
+          setProductData(filteredData);
         }}
       />
+
       <ScrollView style={styles.ListProduct}>
         {productData?.length > 0 ? (
           productData.map((item: IDatabaseData) => {
             const data: IProduct = JSON.parse(item.value);
             return (
               <View style={styles.ListProduct_item} key={item.id}>
-                <Text>
+                <Text style={{color: GLOBALSTYLE.COLORS.primaryDarkGreyHex}}>
                   {data.title}. {data.quantity} {data.unit}. recipe -
                   {data.recipe?.length > 0 ? 'true' : 'false'}
                 </Text>

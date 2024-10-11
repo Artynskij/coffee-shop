@@ -19,31 +19,8 @@ import {IconCancel, IconEdit} from '../components/Icons/Icons';
 import {Input} from '../components/UI/Input';
 import {Button} from '../components/UI/Button';
 import {Switcher} from '../components/Switcher';
-// import {getCategoriesFromData} from '../db/data';
-const getCategoriesFromData = (
-  productData: IDatabaseData[],
-  categoryData: IDatabaseData[],
-) => {
-  let temp: any = {};
-  for (let i = 0; i < productData.length; i++) {
-    if (temp[JSON.parse(productData[i].value).category] === undefined) {
-      temp[JSON.parse(productData[i].value).category] = 1;
-    } else {
-      temp[JSON.parse(productData[i].value).category]++;
-    }
-  }
-  const categories = Object.keys(temp).map((temp: string) => {
-    const findCategory =
-      categoryData.find(item => item.id === +temp) || categoryData[0];
-    return findCategory;
-  });
-  categories.unshift({
-    name: 'category',
-    id: 0,
-    value: JSON.stringify({title: 'All'}),
-  });
-  return categories;
-};
+import {getCategoriesFromData} from '../db/data';
+
 const FormImportScreen = ({navigation}: any) => {
   const [categoryData, setCategoryData] = useState<IDatabaseData[]>([]);
   const [productQuantityInput, setProductQuantityInput] = useState<string>('');
@@ -76,43 +53,43 @@ const FormImportScreen = ({navigation}: any) => {
     }
     return true;
   };
-  const loadItems = () => {
-    database.getItems((data: IDatabaseData[]) => {
-      const categories = data.filter(item => {
-        return item.name === 'category';
-      });
-      const products = data.filter(item => {
-        return item.name === 'product';
-      });
-      console.log(categories);
-      console.log(products);
+  const loadItems = async () => {
+    const dataDb: IDatabaseData[] = await database.getItems();
 
-      setCategoryData(getCategoriesFromData(products, categories));
-      setProductData(products);
+    const categories = dataDb.filter(item => {
+      return item.name === 'category';
     });
+    const products = dataDb.filter(item => {
+      return item.name === 'product';
+    });
+
+    setCategoryData(getCategoriesFromData(products, categories));
+    setProductData(products);
   };
-  const editProduct = () => {
-    database.getItemById(productEditId, (item: IDatabaseData) => {
-      const productValue: IProduct = JSON.parse(item.value);
-      const pushObject: IProduct = {
-        category: productValue.category,
-        title: productValue.title,
-        unit: productValue.unit,
-        quantity: (+productValue.quantity + +productQuantityInput).toString(),
-        recipe: productValue.recipe,
-      };
-      database.updateItem({
-        id: productEditId,
-        name: 'product',
-        value: JSON.stringify(pushObject),
-      });
-      ToastAndroid.showWithGravity(
-        'Товар обновился.',
-        ToastAndroid.SHORT,
-        ToastAndroid.CENTER,
-      );
-      clearInputs();
+  const editProduct = async () => {
+    const itemDb = await database.getItemById(productEditId);
+
+    const productValue: IProduct = JSON.parse(itemDb.value);
+    const pushObject: IProduct = {
+      category: productValue.category,
+      title: productValue.title,
+      unit: productValue.unit,
+      quantityReverse: '0',
+      quantity: (+productValue.quantity + +productQuantityInput).toString(),
+      recipe: productValue.recipe,
+    };
+    database.updateItem({
+      id: productEditId,
+      name: 'product',
+      value: JSON.stringify(pushObject),
     });
+    ToastAndroid.showWithGravity(
+      'Товар обновился.',
+      ToastAndroid.SHORT,
+      ToastAndroid.CENTER,
+    );
+    clearInputs();
+    loadItems();
   };
   const handlerActionProduct = () => {
     if (productEditId) {
@@ -166,31 +143,33 @@ const FormImportScreen = ({navigation}: any) => {
         text={productEditId ? ' Добавить привоз' : 'Выберите товар'}
       />
       <Text style={styles.HeaderText}>Товары</Text>
+
       <Switcher
         titles={categoryData}
-        callbackFunc={indexSwitcher => {
-          database.getItems((items: IDatabaseData[]) => {
-            const filteredData =
-              categoryData[indexSwitcher].id === 0
-                ? items.filter(item => item.name === 'product')
-                : items.filter(item => {
-                    return (
-                      item.name === 'product' &&
-                      JSON.parse(item.value).category ===
-                        categoryData[indexSwitcher].id
-                    );
-                  });
-            setProductData(filteredData);
-          });
+        callbackFunc={async indexSwitcher => {
+          const dataDb: IDatabaseData[] = await database.getItems();
+
+          const filteredData =
+            categoryData[indexSwitcher].id === 0
+              ? dataDb.filter(item => item.name === 'product')
+              : dataDb.filter(item => {
+                  return (
+                    item.name === 'product' &&
+                    JSON.parse(item.value).category ===
+                      categoryData[indexSwitcher].id
+                  );
+                });
+          setProductData(filteredData);
         }}
       />
+
       <ScrollView style={styles.List}>
         {productData?.length > 0 ? (
           productData.map((item: IDatabaseData) => {
             const data: IProduct = JSON.parse(item.value);
             return (
               <View style={styles.List_item} key={item.id}>
-                <Text>
+                <Text style={{color: GLOBALSTYLE.COLORS.primaryDarkGreyHex}}>
                   {data.title}. Количество {data.quantity}.
                 </Text>
                 <View style={styles.GroupButton}>

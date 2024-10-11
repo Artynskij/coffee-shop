@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {GLOBALSTYLE} from '../../theme/theme';
 
 interface IButton {
@@ -11,20 +11,22 @@ export const Button = ({
   type: type,
   handlerAction: handlerAction,
 }: IButton) => {
-  const styles = StyleSheet.create({
-    Button: {
-      fontSize: GLOBALSTYLE.FONTSIZE.size_20,
-      backgroundColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
-      padding: 12,
-      marginBottom: 5,
-      borderRadius: 15,
-    },
-  });
   return (
     <View>
-      <Text onPress={handlerAction} style={styles.Button}>
-        {text}
-      </Text>
+      <TouchableOpacity onPress={handlerAction}>
+        <Text style={styles.Button}>{text}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
+const styles = StyleSheet.create({
+  Button: {
+    color: GLOBALSTYLE.COLORS.primaryGreyHex,
+    fontSize: GLOBALSTYLE.FONTSIZE.size_20,
+
+    backgroundColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
+    padding: 12,
+    marginBottom: 5,
+    borderRadius: 15,
+  },
+});

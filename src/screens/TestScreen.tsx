@@ -1,16 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-  ToastAndroid,
 } from 'react-native';
-import {useStore} from '../store/store';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
+
 import {
   BORDERRADIUS,
   COLORS,
@@ -18,54 +14,30 @@ import {
   FONTSIZE,
   SPACING,
 } from '../theme/theme';
-import HeaderBar from '../components/HeaderBar';
-import CustomIcon from '../components/CustomIcon';
+
 import {FlatList} from 'react-native';
 
 import {Dimensions} from 'react-native';
 import Database from '../db/database';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+
 import {createStandardData} from '../db/data';
 
-const getCategoriesFromData = (data: any) => {
-  let temp: any = {};
-  for (let i = 0; i < data.length; i++) {
-    if (temp[data[i].name] == undefined) {
-      temp[data[i].name] = 1;
-    } else {
-      temp[data[i].name]++;
-    }
-  }
-  let categories = Object.keys(temp);
-  categories.unshift('All');
-  return categories;
-};
-
 const TestScreen = ({navigation}: any) => {
-  const mockProductList = useStore((state: any) => state.mockProduct);
-  const CoffeeList = useStore((state: any) => state.CoffeeList);
-
-  const [mockProduct, setMockProduct] = useState(mockProductList);
-  const [categories, setCategories] = useState(
-    getCategoriesFromData(CoffeeList),
-  );
   const [itemsDB, setItemsDB] = useState<any>();
-  const [categoryIndex, setCategoryIndex] = useState({
-    index: 0,
-    category: categories[0],
-  });
 
   useEffect(() => {
     loadItems(); // Загрузка данных из БД
   }, []);
 
   // Функция для загрузки данных из БД
-  const loadItems = () => {
-    Database.getItems((data: any[]) => {
-      setItemsDB(data);
-    });
+  const loadItems = async () => {
+    try {
+      const dataDb = await Database.getItems();
+      setItemsDB(dataDb);
+    } catch (error) {
+      console.error('Error creating standard data:', error);
+    }
   };
-  const ListRef: any = useRef<FlatList>();
 
   const handleDelete = (id: number) => {
     Database.deleteItem(id);
@@ -110,48 +82,6 @@ const TestScreen = ({navigation}: any) => {
           </View>
         )}
       />
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.CategoryScrollViewStyle}>
-        {mockProduct.map((data: any, index: number) => (
-          <View
-            key={index.toString()}
-            style={styles.CategoryScrollViewContainer}>
-            <TouchableOpacity
-              style={styles.CategoryScrollViewItem}
-              onPress={() => {
-                ListRef?.current?.scrollToOffset({
-                  animated: true,
-                  offset: 0,
-                });
-                setCategoryIndex({
-                  index: index,
-                  category: mockProduct[index],
-                });
-                //   setSortedCoffee([
-                //     ...getCoffeeList(mockProduct[index], CoffeeList),
-                //   ]);
-              }}>
-              <Text
-                style={[
-                  styles.CategoryText,
-                  categoryIndex.index == index
-                    ? {color: COLORS.primaryOrangeHex}
-                    : {},
-                ]}>
-                {data.category}
-              </Text>
-              {categoryIndex.index == index ? (
-                <View style={styles.ActiveCategory} />
-              ) : (
-                <></>
-              )}
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
     </View>
   );
 };

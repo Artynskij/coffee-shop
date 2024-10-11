@@ -18,55 +18,65 @@ export const Switcher = ({
   callbackFunc: callbackFunc,
 }: ISwitcher) => {
   const ListRef: any = useRef<FlatList>();
+
   const [categoryIndex, setCategoryIndex] = useState({
     index: 0,
     category: titles[0],
   });
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.CategoryScrollViewStyle}>
-      {titles.map((data: IDatabaseData, index: number) => (
-        <View key={index.toString()} style={styles.CategoryScrollViewContainer}>
-          <TouchableOpacity
-            style={styles.CategoryScrollViewItem}
-            onPress={() => {
-              ListRef?.current?.scrollToOffset({
-                animated: true,
-                offset: 0,
-              });
-              setCategoryIndex({
-                index: index,
-                category: titles[index],
-              });
-              callbackFunc(index);
-            }}>
-            <Text
-              style={[
-                styles.CategoryText,
-                categoryIndex.index == index
-                  ? {color: GLOBALSTYLE.COLORS.primaryOrangeHex}
-                  : {},
-              ]}>
-              {JSON.parse(data.value).title}
-            </Text>
-            {categoryIndex.index == index ? (
-              <View style={styles.ActiveCategory} />
-            ) : (
-              <></>
-            )}
-          </TouchableOpacity>
-        </View>
-      ))}
-    </ScrollView>
+    <View>
+      {titles.length > 1 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.CategoryScrollViewStyle}>
+          {titles.map((data: IDatabaseData, index: number) => (
+            <View
+              key={index.toString()}
+              style={styles.CategoryScrollViewContainer}>
+              <TouchableOpacity
+                style={styles.CategoryScrollViewItem}
+                onPress={() => {
+                  ListRef?.current?.scrollToOffset({
+                    animated: true,
+                    offset: 0,
+                  });
+                  setCategoryIndex({
+                    index: index,
+                    category: titles[index],
+                  });
+                  callbackFunc(index);
+                }}>
+                <Text
+                  style={[
+                    styles.CategoryText,
+                    categoryIndex.index === index
+                      ? {color: GLOBALSTYLE.COLORS.primaryOrangeHex}
+                      : {},
+                  ]}>
+                  {JSON.parse(data.value).title}
+                </Text>
+                {categoryIndex.index === index ? (
+                  <View style={styles.ActiveCategory} />
+                ) : (
+                  <></>
+                )}
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        ''
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   CategoryScrollViewStyle: {
     // paddingHorizontal: GLOBALSTYLE.SPACING.space_20,
-    marginBottom: GLOBALSTYLE.SPACING.space_20,
+
+    // marginBottom: GLOBALSTYLE.SPACING.space_10,
     borderBottomWidth: 10,
     borderBottomColor: GLOBALSTYLE.COLORS.primaryOrangeHex,
   },
